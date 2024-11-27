@@ -1,0 +1,6 @@
+Zona 1: 100 puntos
+Zona 2: 70 puntos
+Zona 3: 30 puntos
+Zona 4: 20 puntos
+Zona 5: 50 puntos
+

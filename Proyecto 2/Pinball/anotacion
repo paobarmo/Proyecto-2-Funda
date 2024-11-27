@@ -1,0 +1,68 @@
+import socket
+from tkinter import *
+import time
+
+# Variables para el puntaje
+score_1 = 0
+score_2 = 0
+
+# Función para actualizar los puntajes en la interfaz gráfica
+def update_score(zone_score, player=1):
+    global score_1, score_2
+    if player == 1:
+        score_1 += zone_score
+        score_label_1.config(text=f"Score: {score_1}")
+    else:
+        score_2 += zone_score
+        score_label_2.config(text=f"Score: {score_2}")
+
+# Crear ventana para mostrar los puntajes
+window = Tk()
+window.geometry("600x800")
+window.configure(bg="#faf5e8", cursor='hand2')
+window.title("Game")
+
+score_label_1 = Label(window, text="Score: 0", font=("Courier", 25), fg='black', bg="#faf5e8")
+score_label_1.place(x=100, y=300)
+
+score_label_2 = Label(window, text="Score: 0", font=("Courier", 25), fg='black', bg="#faf5e8")
+score_label_2.place(x=100, y=350)
+
+# Configurar el servidor
+HOST = '0.0.0.0'  # Aceptar conexiones en cualquier IP local
+PORT = 12345  # Puerto
+
+# Crear un socket para escuchar conexiones
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_socket.bind((HOST, PORT))
+server_socket.listen(1)
+
+print("Esperando conexión...")
+
+# Aceptar la conexión desde MicroPython
+conn, addr = server_socket.accept()
+print(f"Conectado con {addr}")
+
+# Función para manejar los mensajes recibidos
+def handle_message(message):
+    global score_1, score_2
+    if "score" in message:
+        try:
+            # Obtener el puntaje de la zona (por ejemplo, "score: 100")
+            zone_score = int(message.split(":")[1].strip())
+            # Llamar a la función para actualizar el puntaje
+            update_score(zone_score, player=1)  # O puedes alternar entre player=1 y player=2
+        except ValueError:
+            pass
+
+# Bucle para recibir y manejar mensajes
+while True:
+    data = conn.recv(1024)  # Recibir datos
+    if data:
+        message = data.decode()
+        print(f"Mensaje recibido: {message}")
+        handle_message(message)  # Actualizar puntaje basado en la zona
+    window.update()  # Actualizar la interfaz gráfica
+
+# Cerrar la conexión
+conn.close()
